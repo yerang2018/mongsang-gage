@@ -41,8 +41,6 @@ export default async function TradePage({ params }: { params: Promise<{ id: stri
         </p>
       )}
 
-      <ExperienceFeedback kind="trade" localKey={id} />
-
       <h2 className="mt-8 font-title text-lg font-bold">꿈 양도·양수 계약서</h2>
       <p className="mt-1 text-sm break-keep text-white/70">{CERTIFICATE_PHRASE}</p>
       {/* eslint-disable-next-line @next/next/no-img-element -- 서버가 그린 증서 그림을 그대로 보여 줌 */}
@@ -55,6 +53,8 @@ export default async function TradePage({ params }: { params: Promise<{ id: stri
         <Link href="/" className="flex min-h-12 items-center justify-center rounded-xl bg-moon px-3 text-sm font-medium text-night">내 꿈서랍으로 가기</Link>
         <Link href="/market" className="flex min-h-12 items-center justify-center rounded-xl border border-moon/25 px-3 text-sm font-medium text-moon">장터 더 둘러보기</Link>
       </div>
+
+      <ExperienceFeedback kind="trade" localKey={id} />
     </div>
   );
 }

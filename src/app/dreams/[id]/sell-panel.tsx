@@ -65,9 +65,6 @@ export function SharePanel({ dreamId, title, expiresAt }: { dreamId: string; tit
       <div className="mt-4">
         <ShareButtons compact target="sale" id={dreamId} path={path} title="몽상가게 · 꿈 팔아요" text={`🌙 내 꿈 "${title}" 사 갈 사람? 몽상가게에 올렸어!`} label="공유하기" />
       </div>
-      <Link href={`${path}?preview=1`} className="mt-1 flex min-h-11 items-center justify-center text-xs text-white/60 underline underline-offset-4">
-        친구가 보는 구매 화면
-      </Link>
     </div>
   );
 }

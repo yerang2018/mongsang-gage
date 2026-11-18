@@ -46,7 +46,7 @@ export default function ExperienceFeedback({ kind, localKey }: { kind: "reading"
               </label>)}
             </div>
           </fieldset>
-          <label className="mt-5 block text-sm font-medium" htmlFor={`feedback-${kind}`}>개발자에게 한마디(익명)</label>
+          <label className="mt-5 block text-sm font-medium" htmlFor={`feedback-${kind}`}>몽상가게 사장한테 한마디(익명)</label>
           <p className="mt-1 text-xs leading-relaxed text-white/60">계정·닉네임·꿈·거래 번호는 함께 저장하지 않아요. 의견에 개인정보를 적지 말아 주세요.</p>
           <textarea id={`feedback-${kind}`} value={message} onChange={(e) => setMessage(e.target.value)} disabled={sending} maxLength={1000} rows={3} placeholder="좋았던 점이나 불편했던 점을 자유롭게 남겨 주세요. (선택)" className="mt-3 w-full resize-y rounded-xl border border-white/15 bg-transparent p-3 text-sm" />
           <p className="text-right text-xs text-white/50">{message.length}/1000</p>

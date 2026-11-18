@@ -113,7 +113,6 @@ export default async function DreamResultPage({
 
       <ReadingSections dream={dream} gradeName={grade?.name} />
       <ExperienceFeedback kind="reading" localKey={dream.id} />
-      {trade && <ExperienceFeedback kind="trade" localKey={trade.id} />}
 
       <details className="mt-4 rounded-2xl bg-white/5 p-5 text-sm leading-relaxed">
         <summary className="flex min-h-11 cursor-pointer items-center font-cute text-white/70">{isBuyer ? "친구가 꾼 꿈 원문 보기" : "내가 적은 꿈 보기"}</summary>
@@ -125,6 +124,7 @@ export default async function DreamResultPage({
         {isSeller && <SellerSection dream={dream} grade={grade} trade={trade} buyerNickname={partnerNickname} />}
       </div>
       <Link href="/market" className="mt-4 flex min-h-12 w-full items-center justify-center rounded-xl border border-moon/30 font-cute text-moon">꿈장터로 가기</Link>
+      {trade && <ExperienceFeedback kind="trade" localKey={trade.id} />}
       </GradeReveal>
     </div>
   );
