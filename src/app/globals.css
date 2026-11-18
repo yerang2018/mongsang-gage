@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #212124;
+}
+
+/* 2026-11-04 사용자 "당근 디자인을 원해" → 흰 바탕 + 보라 포인트.
+   화면 코드 곳곳의 text-white/60·bg-white/10 은 "글자색·옅은 칸"이라는 뜻으로 그대로 두고, 색 값만 바꿈:
+   white = 거의 검정 글자, night = 흰색(보라 버튼 위 글자·말풍선 바탕), moon = 보라 포인트 */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-white: #212124;
+  --color-moon: #403154;
+  --color-night: #ffffff;
+  --font-sans: var(--font-suit), "Apple SD Gothic Neo", system-ui, sans-serif;
+  --font-brand: var(--font-song-myung), "AppleMyungjo", serif;
+  --font-title: var(--font-gowun-batang), "AppleMyungjo", "Batang", serif;
+  --font-cute: var(--font-sans);
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+}
+
+/* 시안 12: 제목은 고운바탕 400, 버튼·강조는 SUIT 500. */
+h1,
+h2,
+h3,
+.font-title {
+  font-family: var(--font-title);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}
+
+.font-cute {
+  font-weight: 500;
+}
+
+/* ───── 움직임 (해몽 기다리기·봉투 열기) ───── */
+@keyframes kk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes kk-twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+@keyframes kk-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes kk-pop { 0% { opacity: 0; transform: scale(0.4); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes kk-stamp {
+  0% { opacity: 0; transform: scale(2.4) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.92) rotate(-5deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-4deg); }
+}
+@keyframes kk-dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+@keyframes kk-wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+
+.kk-float { animation: kk-float 3s ease-in-out infinite; }
+.kk-twinkle { animation: kk-twinkle 1.8s ease-in-out infinite; }
+.kk-fade-up { animation: kk-fade-up 0.5s ease-out both; }
+.kk-pop { animation: kk-pop 0.45s ease-out both; }
+.kk-stamp { animation: kk-stamp 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.kk-wiggle { animation: kk-wiggle 1.2s ease-in-out infinite; }
+.kk-dots::after { content: ""; animation: kk-dots 1.2s steps(1) infinite; }
+
+/* 키보드로 움직일 때 지금 어디에 있는지 보이게 */
+:focus-visible {
+  outline: 2px solid var(--color-moon);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kk-float, .kk-twinkle, .kk-fade-up, .kk-pop, .kk-stamp, .kk-wiggle, .kk-dots::after { animation: none; }
+}
+
+/* 가로로 미는 줄(운 태그 등)에서 스크롤 막대 숨기기 */
+.kk-noscroll { scrollbar-width: none; }
+/* 떠 있는 버튼(장터 "+ 꿈 올리기")이 있는 화면은 맨 아래 문구가 가려지지 않게 여백 */
+main:has(.kk-fab) { padding-bottom: 5.5rem; }
+/* 아래 탭(MY·장터)이 있는 화면: 탭 높이만큼 여백, 떠 있는 버튼은 탭 위로 */
+main:has(.kk-tabbar) { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+main:has(.kk-tabbar):has(.kk-fab) { padding-bottom: calc(9rem + env(safe-area-inset-bottom)); }
+main:has(.kk-tabbar) .kk-fab { bottom: calc(5rem + env(safe-area-inset-bottom)); }
+/* 판매 카드 아래 고정 구매 막대 */
+main:has(.kk-buybar) { padding-bottom: calc(7rem + env(safe-area-inset-bottom)); }
+.kk-noscroll::-webkit-scrollbar { display: none; }
+
+
+/* 장터만: 흰 바탕과 사진 목록에 명조 제목·작은 달빛 포인트를 더해요. */
+.kk-market h1,
+.kk-market h2 {
+  font-family: var(--font-title);
+  -webkit-text-stroke: 0;
+  letter-spacing: -0.035em;
+}
+
+.kk-market-news > a {
+  border: 1px solid rgb(106 79 214 / 8%);
+  border-radius: 12px;
+  background: #f7f5fc;
+}
+
+.kk-market-filters > div {
+  min-height: 48px;
+}
+
+.kk-market-empty {
+  border: 1px solid #ebe6f6;
+  background: #fcfbfe;
+}
+
+.kk-market-list > li > a {
+  gap: 16px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  border-radius: 12px;
+}
+
+.kk-market-list > li > a > :first-child {
+  width: 88px;
+  height: 88px;
+  border-radius: 12px;
+}
+
+.kk-market-list > li > a > div > p:first-child {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.kk-market-list > li > a > div > p:first-child > span:first-child {
+  flex-basis: 100%;
+  line-height: 1.5;
+}
+
+.kk-market-list > li > a > div > p:last-child {
+  font-size: 12px;
+}
+
+.kk-market-requests > section,
+.kk-market-recent > section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #efedf4;
+}
+
+.kk-market-requests a[href^="/requests/new"] {
+  background: #f5f1fc;
+  box-shadow: none;
+}
+
+.kk-market-requests section > .kk-noscroll > a {
+  border-color: #e7dff5;
+  background: #faf8fe;
+}
+
+.kk-market-compose {
+  box-shadow: 0 4px 14px rgb(60 40 140 / 16%);
+}
+
+@media (max-width: 359px) {
+  .kk-market-list > li > a {
+    gap: 12px;
+  }
+
+  .kk-market-list > li > a > :first-child {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+/* 하단 작성 영역은 불투명한 흰 바탕으로, 목록의 버튼과 겹쳐 보이지 않게 해요. */
+.kk-market .kk-fab.kk-market-actions {
+  bottom: calc(4rem + env(safe-area-inset-bottom));
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-top: 1px solid #f0edf6;
+  background: var(--background);
+}
+
+/* 운의 이름 대신, 지금 꿈을 고르는 마음을 한눈에 보여 줘요. */
+.kk-market-wishes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kk-market-wish {
+  display: flex;
+  min-height: 68px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  border: 1px solid #e9e4f4;
+  border-radius: 12px;
+  background: #fcfbfe;
+  color: #514b64;
+  font-size: 14px;
+  line-height: 1.55;
+  text-align: center;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.kk-market-wish:hover {
+  border-color: #c5b7eb;
+  background: #f5f1fc;
+}
+
+.kk-market-wish[aria-current="page"] {
+  border-color: var(--color-moon);
+  background: var(--color-moon);
+  color: var(--background);
+  font-weight: 700;
+}
+
+.kk-market-wish-story {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #f7f4fc;
+}
+
+@media (max-width: 359px) {
+  .kk-market-wish {
+    min-height: 64px;
+    font-size: 12px;
+  }
+
+  .kk-market-wish-story {
+    padding: 16px;
+  }
+}
+
+/* 첫 방문 화면은 소개와 시작 버튼에 집중해요. */
+main:has(.kk-landing) > p { display: none; }
+
+main:has(.kk-onboarding) > p { display: none; }
+
+/* 기존 화면 구성은 유지하고 먹보라 톤과 간격만 정돈해요. */
+.kk-my header, .kk-market header { padding-bottom: 12px; border-bottom: 1px solid #eeeaf1; }
+.kk-my .kk-beads { border-color: #e8e2ed; background: #fcfbfd; padding-top: 16px; padding-bottom: 8px; }
+.kk-my .kk-profile { margin-top: 24px; }
+.kk-my .kk-shortcuts { padding-bottom: 20px; border-bottom: 1px solid #eeeaf1; }
+.kk-my .kk-records { margin-top: 28px; }
+.kk-market-wishes { margin-top: 12px; }
+.kk-market-wish { background: #fcfbfd; border-color: #e8e2ed; color: #554a60; font-size: 13px; }
+.kk-market-wish:hover { background: #f5f2f7; border-color: #c6bccf; }
+.kk-market-wish:last-child:nth-child(3n + 1) { grid-column: 1 / -1; min-height: 48px; }
+.kk-market-wish-story { background: #f7f4f9; }
+.kk-market-list > li > a { padding-top: 18px; padding-bottom: 18px; }
