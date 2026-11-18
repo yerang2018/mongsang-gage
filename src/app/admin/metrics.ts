@@ -14,7 +14,7 @@ export async function loadTestMetrics(): Promise<{ cards: Metric[]; byGrade: { n
     db.from("bead_orders").select("user_id, amount_won, status").gte("created_at", METRICS_FROM),
     db.from("trades").select("buyer_id, seller_id, price").gte("created_at", METRICS_FROM),
     db.from("gifts").select("sender_id, kind, first_viewed_at, dreams(grade)").gte("created_at", METRICS_FROM),
-    db.from("events").select("visitor_id").eq("type", "first_visit").eq("app_env", "production").gte("created_at", METRICS_FROM),
+    db.from("events").select("visitor_id, created_at").eq("type", "first_visit").eq("app_env", "production").gte("created_at", METRICS_FROM),
     db.from("events").select("visitor_id, created_at").eq("type", "gift_visit").eq("app_env", "production").gte("created_at", METRICS_FROM),
     db.from("events").select("visitor_id, user_id").eq("type", "session_link"),
     db.from("profiles").select("id, created_at, nickname").gte("created_at", METRICS_FROM),
@@ -32,6 +32,8 @@ export async function loadTestMetrics(): Promise<{ cards: Metric[]; byGrade: { n
   const luckSets = ((gifts.data ?? []) as unknown as GiftRow[]).filter((g) => g.kind === "luck_set" && real(g.sender_id));
   const opened = luckSets.filter((g) => g.first_viewed_at).length;
   const visitors = new Set(((visits.data ?? []) as { visitor_id: string }[]).map((v) => v.visitor_id).filter((v) => !exVisitors.has(v)));
+  const dayStart = Date.parse(new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) + "T00:00:00+09:00");
+  const todayVisitors = new Set(((visits.data ?? []) as { visitor_id: string; created_at: string }[]).filter((v) => !exVisitors.has(v.visitor_id) && Date.parse(v.created_at) >= dayStart).map((v) => v.visitor_id)).size;
   const newUsers = ((profiles.data ?? []) as { id: string; nickname: string | null }[]).filter((p) => p.nickname && real(p.id));
   const dreamCount = ((dreams.data ?? []) as { original_owner_id: string }[]).filter((d) => real(d.original_owner_id)).length;
 
@@ -44,7 +46,7 @@ export async function loadTestMetrics(): Promise<{ cards: Metric[]; byGrade: { n
 
   const pct = (n: number, d: number) => (d > 0 ? `${Math.round((n / d) * 100)}%` : "-");
   const cards: Metric[] = [
-    { label: "방문자", value: `${visitors.size}명`, sub: "운영 사이트" },
+    { label: "접속자 수", value: `${visitors.size}명`, sub: `오늘 새 접속 ${todayVisitors}명 (내 기기 뺌)` },
     { label: "새로 시작", value: `${newUsers.length}명`, sub: "닉네임까지" },
     { label: "꿈 기록", value: `${dreamCount}편` },
     { label: "꿈 거래", value: `${tradeRows.length}건`, sub: `구슬 ${tradeRows.reduce((s, t) => s + t.price, 0).toLocaleString()}개` },

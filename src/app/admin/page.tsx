@@ -32,7 +32,9 @@ const TABS = [
   ["reports", "🚩 신고"],
   ["dreams", "꿈 원문"],
   ["feedback", "익명 피드백"],
+  ["trades", "거래 내역"],
 ] as const;
+const OTHER: string[] = ["reports", "dreams", "feedback", "trades"];
 
 // 관리자 화면: 테스트 지표 + 구슬 충전 주문 목록([입금 확인] [취소·환불]) + 신고 목록([문제없음] [숨김 유지])
 // ADMIN_EMAILS 에 있는 이메일 계정만 (아니면 "없는 페이지")
@@ -54,9 +56,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     .select("id, order_code, user_id, amount_won, beads, status, created_at, paid_at")
     .order("created_at", { ascending: false })
     .limit(200);
-  if (tab !== "all" && tab !== "reports" && tab !== "dreams" && tab !== "feedback") q = q.eq("status", tab);
+  if (tab !== "all" && !OTHER.includes(tab)) q = q.eq("status", tab);
   if (code) q = q.like("order_code", `${code}%`);
-  const [{ data, error }, { data: counts }] = await Promise.all([tab === "reports" || tab === "dreams" || tab === "feedback" ? { data: [], error: null } : q, db.from("bead_orders").select("status, amount_won")]);
+  const [{ data, error }, { data: counts }] = await Promise.all([OTHER.includes(tab) ? { data: [], error: null } : q, db.from("bead_orders").select("status, amount_won")]);
   const orders = (data ?? []) as Order[];
   const ids = [...new Set(orders.map((o) => o.user_id))];
   const { data: profiles } = ids.length ? await db.from("profiles").select("id, nickname").in("id", ids) : { data: [] };
@@ -104,7 +106,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         ))}
       </nav>
 
-      {tab !== "reports" && tab !== "dreams" && tab !== "feedback" && (
+      {!OTHER.includes(tab) && (
         <form action="/admin" className="mt-4 flex gap-2" role="search">
           {tab !== "pending" && <input type="hidden" name="status" value={tab} />}
           <label htmlFor="order-code" className="sr-only">주문번호</label>
@@ -116,9 +118,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       {tab === "feedback" && <FeedbackList />}
       {tab === "reports" && <ReportList />}
       {tab === "dreams" && <AdminDreamList page={params.page} />}
+      {tab === "trades" && <TradeList />}
 
-      {tab !== "reports" && tab !== "dreams" && tab !== "feedback" && error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">주문을 못 불러왔어요: {error.message}</p>}
-      {tab === "reports" || tab === "dreams" || tab === "feedback" ? null : orders.length === 0 ? (
+      {!OTHER.includes(tab) && error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">주문을 못 불러왔어요: {error.message}</p>}
+      {OTHER.includes(tab) ? null : orders.length === 0 ? (
         <p className="mt-6 rounded-2xl bg-white/5 p-6 text-center text-sm text-white/70">주문이 없어요</p>
       ) : (
         <ul className="mt-4 space-y-3">
@@ -143,7 +146,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           })}
         </ul>
       )}
-      {tab !== "reports" && tab !== "dreams" && tab !== "feedback" && (
+      {!OTHER.includes(tab) && (
         <p className="mt-6 text-sm text-white/70">송금 메모의 4자리와 금액이 맞는지 확인한 뒤 [입금 확인]을 눌러 주세요. 환불은 구슬을 쓰지 않은 주문만 돼요.</p>
       )}
     </div>
@@ -163,6 +166,33 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
       <p className="mt-1 font-cute text-lg">{value}</p>
       {sub && <p className="text-xs text-white/60">{sub}</p>}
     </div>
+  );
+}
+
+type TradeRow = { id: string; dream_id: string; seller_id: string; buyer_id: string; price_type: string; price: number; cheer_message: string | null; created_at: string; dreams: { title: string | null; grade: string | null } | null };
+
+// 거래 내역: 어떤 꿈이 누구에게서 누구에게 얼마에 팔렸는지 (최근 100건, 관리자에게는 실제 닉네임)
+async function TradeList() {
+  const db = createAdminClient();
+  const { data, error } = await db.from("trades").select("id, dream_id, seller_id, buyer_id, price_type, price, cheer_message, created_at, dreams(title, grade)").order("created_at", { ascending: false }).limit(100);
+  if (error) return <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">거래 내역을 못 불러왔어요: {error.message}</p>;
+  const trades = (data ?? []) as unknown as TradeRow[];
+  if (trades.length === 0) return <p className="mt-6 rounded-2xl bg-white/5 p-6 text-center text-sm text-white/70">아직 거래가 없어요</p>;
+  const ids = [...new Set(trades.flatMap((t) => [t.seller_id, t.buyer_id]))];
+  const { data: profiles } = await db.from("profiles").select("id, nickname").in("id", ids);
+  const nick = new Map(((profiles ?? []) as { id: string; nickname: string | null }[]).map((p) => [p.id, p.nickname ?? "(닉네임 없음)"]));
+  return (
+    <ul className="mt-4 space-y-3">
+      {trades.map((t) => (
+        <li key={t.id} className="rounded-2xl bg-white/10 p-4">
+          <p className="font-cute">
+            <span className="text-moon">{gradeByCode(t.dreams?.grade ?? null)?.name}</span> {t.dreams?.title ?? "제목 없는 꿈"}
+          </p>
+          <p className="mt-1 text-sm">{nick.get(t.seller_id)} → {nick.get(t.buyer_id)}, {t.price_type === "beads" ? `구슬 ${t.price.toLocaleString()}개` : `응원 한마디${t.cheer_message ? ` “${t.cheer_message}”` : ""}`}</p>
+          <p className="text-xs text-white/60">{when(t.created_at)}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 
