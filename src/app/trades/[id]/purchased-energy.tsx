@@ -8,7 +8,7 @@ const ENERGY: Record<string, { name: string; flow: string; effect: string }> = {
 export default function PurchasedEnergy({ tags, symbols, buyerName }: { tags: string[]; symbols: string[]; buyerName: string }) {
   const entries = [...new Set(tags)].map(tag => ENERGY[tag]).filter(Boolean);
   return <section className="mt-7 rounded-2xl bg-moon/5 p-5 text-sm leading-loose">
-    <h2 className="font-title text-xl">{buyerName}에게 생긴 기운</h2>
+    <h2 className="font-title text-xl">이 꿈이 주는 기운</h2>
     {symbols.length > 0 && <p className="mt-3 text-white/75">꿈속의 {symbols.slice(0, 3).map(symbol => `‘${symbol}’`).join(", ")}에 담긴 뜻을 당신의 바람과 함께 읽어봅니다.</p>}
     {(entries.length ? entries : [{ name: "새로운 흐름을 맞이하는 기운", flow: "익숙한 일상을 지나 새로운 가능성을 받아들이는 꿈으로 읽습니다.", effect: "마음에 품고 있던 바람을 돌아보고 다음 걸음을 정하는 계기로 간직해 보세요." }]).map(item => <div key={item.name} className="mt-4">
       <h3 className="font-medium text-moon">{item.name}</h3><p className="mt-1">{item.flow}</p>
