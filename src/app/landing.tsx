@@ -137,7 +137,7 @@ function LandingBody({ mode, guest }: { mode: "login" | "nickname"; guest: boole
               type="button"
               onClick={guestStart}
               disabled={saving}
-              className="mt-3 min-h-14 w-full rounded-xl border border-white/15 px-5 py-4 text-base text-white/80 transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-40"
+              className="mt-3 min-h-14 w-full rounded-xl border border-white/15 px-5 py-4 text-base font-medium text-[#191919] transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-40"
             >
               게스트로 들어가기
             </button>
