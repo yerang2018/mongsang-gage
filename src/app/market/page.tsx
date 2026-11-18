@@ -43,7 +43,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   const allListings = sortMarketListings(searchMarketListings(pool, search.query), sort);
   const listings = gradeFilter ? allListings.filter((d) => d.grade === gradeFilter) : allListings;
   const gradeName = GRADES.find((g) => g.code === gradeFilter)?.name;
-  const visibleListings = sp.all === "1" ? listings : listings.slice(0, 10);
+  const visibleListings = sp.all === "1" ? listings : listings.slice(0, 5);
   const baseHref = withGrade(marketWishHref(wish, sort, search.query));
   const allHref = `${baseHref}${baseHref.includes("?") ? "&" : "?"}all=1`;
   const recent = (recentRes.data ?? []) as RecentSale[];
@@ -164,7 +164,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
         </ul>
       )}
 
-      {!listingError && sp.all !== "1" && listings.length > 10 && (
+      {!listingError && sp.all !== "1" && listings.length > 5 && (
         <Link href={allHref} className="mt-4 flex min-h-12 items-center justify-center rounded-xl border border-moon/20 text-sm font-medium text-moon">전체보기 ({listings.length}개)</Link>
       )}
       {!search.query && <div className="kk-market-recent">
