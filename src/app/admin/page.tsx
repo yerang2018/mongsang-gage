@@ -1,3 +1,4 @@
+import ActivityTab from "./activity";
 import FeedbackList from "./feedback-list";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -32,9 +33,10 @@ const TABS = [
   ["reports", "🚩 신고"],
   ["dreams", "꿈 원문"],
   ["feedback", "익명 피드백"],
+  ["activity", "활동"],
   ["trades", "거래 내역"],
 ] as const;
-const OTHER: string[] = ["reports", "dreams", "feedback", "trades"];
+const OTHER: string[] = ["reports", "dreams", "feedback", "trades", "activity"];
 
 // 관리자 화면: 테스트 지표 + 구슬 충전 주문 목록([입금 확인] [취소·환불]) + 신고 목록([문제없음] [숨김 유지])
 // ADMIN_EMAILS 에 있는 이메일 계정만 (아니면 "없는 페이지")
@@ -119,6 +121,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       {tab === "reports" && <ReportList />}
       {tab === "dreams" && <AdminDreamList page={params.page} />}
       {tab === "trades" && <TradeList />}
+      {tab === "activity" && <ActivityTab />}
 
       {!OTHER.includes(tab) && error && <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">주문을 못 불러왔어요: {error.message}</p>}
       {OTHER.includes(tab) ? null : orders.length === 0 ? (

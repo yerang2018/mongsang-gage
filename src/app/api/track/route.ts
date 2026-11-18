@@ -13,7 +13,7 @@ const APP_ENV = process.env.VERCEL_ENV ?? "development";
 const UUID = /^[0-9a-f-]{36}$/i;
 
 const Body = z.object({
-  type: z.enum(["visit", "share_attempt", "share_complete", "share_cancel", "link_copied", "fake_door"]),
+  type: z.enum(["visit", "page_view", "share_attempt", "share_complete", "share_cancel", "link_copied", "fake_door"]),
   target: z.string().regex(/^[a-z_]{1,24}$/).optional(), // 화면 종류 (sale·request·market…)
   id: z.string().regex(UUID).optional(), // 꿈 id 또는 꿈 구해요 id
   via: z.enum(["share", "copy"]).optional(), // 공유 링크로 들어왔는지
@@ -56,6 +56,9 @@ export async function POST(req: Request) {
     if (b.target === "gift") rows.push({ ...base, type: "gift_visit", dedup_key: "gift", meta: null });
     // 로그인한 방문: 방문자 번호 ↔ 계정 연결 (익명 시작 전 유입 경로를 이어 붙이는 데 씀)
     if (user) rows.push({ ...base, type: "session_link", dedup_key: user.id, meta: null });
+  } else if (b.type === "page_view") {
+    // 화면을 옮길 때마다 한 줄 (어떤 화면·어떤 꿈을 봤는지. 꿈 내용은 기록하지 않음)
+    rows.push({ ...base, type: "page_view", dedup_key: null, meta: meta({ target: b.target, id: b.id }) });
   } else if (b.type === "fake_door") {
     if (b.door) rows.push({ ...base, type: "fake_door", dedup_key: null, meta: meta({ door: b.door }) });
   } else {
