@@ -99,12 +99,6 @@ export default function NewDreamPage() {
       </Link>
       <h1 className="mt-4 font-title text-2xl font-bold">어젯밤 무슨 꿈 꿨어요?</h1>
 
-      <ul className="mt-4 space-y-1 text-sm text-white/60">
-        <li>· 기억나는 장면</li>
-        <li>· 누가 나왔는지</li>
-        <li>· 그때 기분</li>
-      </ul>
-
       <textarea
         aria-label="꿈 내용"
         value={dreamText}
@@ -112,7 +106,7 @@ export default function NewDreamPage() {
         rows={7}
         maxLength={2000}
         placeholder="예) 시골집 마당에 커다란 돼지가 들어왔는데, 금화를 물고 있었어요. 엄마가 웃으면서 잡으라고 했고 저는 신났어요."
-        className="mt-3 w-full rounded-2xl bg-white/10 p-4 text-base outline-none ring-moon/60 placeholder:text-white/30 focus:ring-2"
+        className="mt-4 w-full rounded-2xl bg-white/10 p-4 text-base outline-none ring-moon/60 placeholder:text-white/30 focus:ring-2"
       />
       <p className="text-right text-xs text-white/60">{len}/2000</p>
 
@@ -124,11 +118,9 @@ export default function NewDreamPage() {
           onChange={(e) => setBirthDate(e.target.value)}
           min="1900-01-01"
           max={todayInKorea()}
-          aria-describedby="birth-date-help"
           className="mt-2 min-h-12 w-full min-w-0 rounded-xl bg-white/10 px-4 py-3 text-base outline-none ring-moon/60 focus:ring-2"
         />
       </label>
-      <p id="birth-date-help" className="mt-2 text-xs leading-relaxed text-white/60">입력한 생년월일은 프로필에 저장하지 않아요.</p>
 
       <p className="mt-5 text-sm text-white/60">판매 가능한 꿈은 해몽 후 장터에 자동으로 올라가요. 원문과 자세한 해몽은 구매자에게만 공개돼요.</p>
 

@@ -34,10 +34,10 @@ export default async function Home() {
   if (!user) return <Landing />;
 
   const { data: profile } = await supabase.from("profiles").select("nickname").eq("id", user.id).single();
-  // 닉네임이 아직 없으면 첫 화면에서 이어서 닉네임을 받음 (익명 계정은 카카오 연결부터)
-  if (!profile?.nickname) return <Landing mode={user.is_anonymous ? "login" : "nickname"} />;
+  // 닉네임이 아직 없으면 첫 화면에서 이어서 닉네임을 받음 (게스트도 여기서 닉네임을 정함)
+  if (!profile?.nickname) return <Landing mode="nickname" guest={user.is_anonymous} />;
 
-  const [{ data: summary }, { data: myDreams }, { data: trades, error: tradeError }, { data: myRequest }] = await Promise.all([
+  const [{ data: summary }, { data: myDreams }, { data: trades, error: tradeError }] = await Promise.all([
     supabase.rpc("my_summary").single<{ bead_balance: number }>(),
     supabase
       .from("dreams")
@@ -50,14 +50,7 @@ export default async function Home() {
       .select("id, seller_id, buyer_id, price_type, price, created_at, dream:dreams(title, luck_tags, headline)")
       .or(`seller_id.eq.${user.id},buyer_id.eq.${user.id}`)
       .order("created_at", { ascending: false })
-      .returns<TradeRow[]>(),
-    supabase
-      .from("dream_requests")
-      .select("id, luck_tag, request_responses(count)")
-      .eq("requester_id", user.id)
-      .eq("status", "open")
-      .gt("expires_at", new Date().toISOString())
-      .maybeSingle<{ id: string; luck_tag: string; request_responses: { count: number }[] }>(),
+      .returns<TradeRow[]>()
   ]);
 
   const selling = (myDreams ?? []).filter((d) => d.sale_status === "on_sale");
@@ -92,7 +85,7 @@ export default async function Home() {
         href="/dreams/new"
         className="mt-5 block w-full rounded-lg bg-moon py-4 text-center font-cute text-lg text-night active:scale-[0.98]"
       >
-        어젯밤 꿈 올리기
+        내 꿈 팔기
       </Link>
 
       {/* 꿈 구슬 잔액과 충전 */}
@@ -120,23 +113,10 @@ export default async function Home() {
 
       </section>
 
-      {myRequest && (
-        <Link
-          href={`/requests/${myRequest.id}`}
-          className="mt-3 flex min-h-14 items-center justify-between rounded-2xl border border-moon/30 bg-moon/10 px-4 text-sm active:scale-[0.98]"
-        >
-          <span>
-            <b className="font-cute text-moon">#{myRequest.luck_tag}</b> 꿈 구하는 중
-          </span>
-          <span className="font-cute text-moon">내민 꿈 {myRequest.request_responses[0]?.count ?? 0}개 ›</span>
-        </Link>
-      )}
-
-      {/* 바로가기 동그라미 3개 (나의 당근의 판매내역·구매내역처럼) */}
-      <nav className="kk-shortcuts mt-6 grid grid-cols-3 text-center text-sm" aria-label="내 꿈 바로가기">
+      {/* 바로가기 동그라미 2개 (나의 당근의 판매내역·구매내역처럼) */}
+      <nav className="kk-shortcuts mt-6 grid grid-cols-2 text-center text-sm" aria-label="내 꿈 바로가기">
         <Shortcut href="#sold" label="판 꿈" value={sold.length} />
         <Shortcut href="#bought" label="산 꿈" value={bought.length} />
-        <Shortcut href="/requests/new" label="꿈 구하기" value="+" />
       </nav>
 
       <section className="mt-8" aria-labelledby="trade-history-heading">

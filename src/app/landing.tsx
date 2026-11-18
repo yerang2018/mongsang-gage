@@ -1,28 +1,38 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { BEAD_REWARDS } from "@/lib/grades";
 import { NEXT_COOKIE, safeNextPath } from "@/lib/next-path";
 import { createClient } from "@/lib/supabase/client";
 import { track } from "@/lib/track-client";
 
-// 첫 화면: 서비스 소개 + [카카오로 시작하기].
+// 닉네임 자동 추천 (2026-11-18): 형용사 + 동물 + 두 자리 숫자. 12자 안, 겹치면 다시 추천
+const ADJECTIVES = ["포근한", "반짝이는", "졸린", "다정한", "느긋한", "씩씩한", "엉뚱한", "상냥한", "푸른", "고요한"];
+const ANIMALS = ["고양이", "여우", "토끼", "곰", "다람쥐", "펭귄", "수달", "부엉이", "사슴", "고래"];
+const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)];
+const suggestNickname = () => `${pick(ADJECTIVES)}${pick(ANIMALS)}${Math.floor(Math.random() * 90) + 10}`;
+
+// 첫 화면: 서비스 소개 + [카카오로 시작하기] + [게스트로 들어가기].
 // 카카오로 로그인한 뒤 닉네임이 아직 없으면 같은 화면에서 이어서 닉네임을 받음 (예전 두 번째 화면 '/onboarding'을 합침, 2026-11-17)
 // mode "login" = 카카오 시작 버튼, "nickname" = 카카오로 로그인은 했고 닉네임만 남음
-export default function Landing({ mode = "login" }: { mode?: "login" | "nickname" }) {
+export default function Landing({ mode = "login", guest = false }: { mode?: "login" | "nickname"; guest?: boolean }) {
   return (
     <Suspense>
-      <LandingBody mode={mode} />
+      <LandingBody mode={mode} guest={guest} />
     </Suspense>
   );
 }
 
-function LandingBody({ mode }: { mode: "login" | "nickname" }) {
+function LandingBody({ mode, guest }: { mode: "login" | "nickname"; guest: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNextPath(params.get("next"));
   const [nickname, setNickname] = useState("");
+  // 서버에서 그린 화면과 달라지지 않게, 화면이 뜬 뒤에 추천 이름을 채움 (직접 고칠 수 있음)
+  useEffect(() => {
+    if (mode === "nickname") setNickname(suggestNickname());
+  }, [mode]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(params.get("error") ? "카카오 로그인을 완료하지 못했어요. 다시 시도해 주세요." : "");
 
@@ -44,15 +54,29 @@ function LandingBody({ mode }: { mode: "login" | "nickname" }) {
     }
   }
 
+  // 게스트로 들어가기: 카카오 없이 익명 계정으로 시작 → 닉네임 정하는 화면으로
+  async function guestStart() {
+    setSaving(true);
+    setError("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setError("게스트로 들어가지 못했어요. 잠시 후 다시 시도해 주세요.");
+      setSaving(false);
+      return;
+    }
+    router.refresh();
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError("");
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.is_anonymous) {
+    if (!user) {
       setSaving(false);
-      setError("카카오로 먼저 로그인해 주세요.");
+      setError("로그인이 풀렸어요. 처음 화면에서 다시 시작해 주세요.");
       return;
     }
     const { data: existing, error: profileError } = await supabase.from("profiles").select("nickname").eq("id", user.id).single();
@@ -71,6 +95,7 @@ function LandingBody({ mode }: { mode: "login" | "nickname" }) {
     setSaving(false);
     if (error) {
       setError(error.message);
+      setNickname(suggestNickname()); // 겹친 이름이면 새 추천으로 바꿔 줌
       return;
     }
     track("visit", { target: "nickname_set" }); // 서버가 방문자 번호 ↔ 새 계정을 연결 (유입 경로 이어 붙이기)
@@ -106,12 +131,20 @@ function LandingBody({ mode }: { mode: "login" | "nickname" }) {
             >
               {saving ? "연결하는 중…" : "카카오로 시작하기"}
             </button>
+            <button
+              type="button"
+              onClick={guestStart}
+              disabled={saving}
+              className="mt-3 min-h-14 w-full rounded-xl border border-white/15 px-5 py-4 text-base text-white/80 transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-40"
+            >
+              게스트로 들어가기
+            </button>
             {error && <p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
           </>
         ) : (
           <div className="mt-10">
             <h2 className="font-title text-2xl leading-relaxed">어떻게 불러드릴까요?</h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/65">닉네임은 판매 카드와 매매 증서에 적혀요.</p>
+            <p className="mt-3 text-sm leading-relaxed text-white/65">추천 이름을 골라 두었어요. 그대로 써도 되고, 직접 고쳐도 돼요.</p>
             <form onSubmit={save} className="mt-8">
               <label htmlFor="nickname" className="sr-only">닉네임</label>
               <input
@@ -120,10 +153,14 @@ function LandingBody({ mode }: { mode: "login" | "nickname" }) {
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={12}
                 placeholder="닉네임을 입력해 주세요"
-                autoFocus
                 className="min-h-14 w-full rounded-xl border border-white/15 bg-transparent px-4 text-base ring-moon/60 placeholder:text-white/35 focus:outline-none focus:ring-2"
               />
-              <p className="mt-2 text-right text-xs text-white/60">{length}/12 (2자 이상)</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-white/60">
+                <button type="button" onClick={() => setNickname(suggestNickname())} className="inline-flex min-h-11 items-center text-moon underline underline-offset-4">
+                  다른 이름 추천받기
+                </button>
+                <span>{length}/12 (2자 이상)</span>
+              </div>
               <button
                 disabled={saving || length < 2}
                 className="mt-5 min-h-14 w-full rounded-xl bg-moon px-5 py-4 font-cute text-base text-night active:opacity-80 disabled:opacity-40"
@@ -133,7 +170,7 @@ function LandingBody({ mode }: { mode: "login" | "nickname" }) {
               {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</p>}
             </form>
             <p className="mt-6 text-sm text-moon">시작 선물 꿈 구슬 {BEAD_REWARDS.signupAnonymous.toLocaleString()}개</p>
-            <p className="mt-6 text-xs leading-relaxed text-white/60">다음에도 같은 카카오 계정으로 로그인하면 이 닉네임과 꿈·구슬을 그대로 사용할 수 있어요.</p>
+            {!guest && <p className="mt-6 text-xs leading-relaxed text-white/60">다음에도 같은 카카오 계정으로 로그인하면 이 닉네임과 꿈·구슬을 그대로 사용할 수 있어요.</p>}
           </div>
         )}
       </div>

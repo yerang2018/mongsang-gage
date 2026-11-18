@@ -94,10 +94,6 @@ export default async function BeadsPage({ searchParams }: { searchParams: Promis
         </div>
       </section>
 
-      <ul className="mt-6 space-y-1.5 text-sm text-white/75">
-        <li>· 충전한 구슬을 쓰지 않았다면 환불해 드려요. 운영자에게 주문번호를 알려 주세요.</li>
-      </ul>
-
       {done.length > 0 && (
         <section className="mt-6">
           <h2 className="font-title text-base font-bold">지난 충전</h2>
@@ -115,7 +111,7 @@ export default async function BeadsPage({ searchParams }: { searchParams: Promis
       )}
 
       <p className="mt-8 border-t border-white/10 pt-4 text-center text-xs text-white/60">
-        문의·환불 운영자 이메일{" "}
+        문의 메일 :{" "}
         <a href="mailto:woonyoungja@gmail.com" className="underline">
           woonyoungja@gmail.com
         </a>

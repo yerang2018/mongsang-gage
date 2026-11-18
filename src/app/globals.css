@@ -141,21 +141,10 @@ main:has(.kk-buybar) { padding-bottom: calc(7rem + env(safe-area-inset-bottom));
   font-size: 12px;
 }
 
-.kk-market-requests > section,
 .kk-market-recent > section {
   margin-top: 28px;
   padding-top: 24px;
   border-top: 1px solid #efedf4;
-}
-
-.kk-market-requests a[href^="/requests/new"] {
-  background: #f5f1fc;
-  box-shadow: none;
-}
-
-.kk-market-requests section > .kk-noscroll > a {
-  border-color: #e7dff5;
-  background: #faf8fe;
 }
 
 .kk-market-compose {

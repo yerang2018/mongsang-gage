@@ -224,7 +224,7 @@ function StateBadge({ status }: { status: SaleState }) {
   return <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${cls}`}>{label}</span>;
 }
 
-// 팔린 꿈·끝난 꿈 링크로 온 사람: 막히지 않게 다른 꿈 보기·꿈 구하기·내 꿈 올리기로 이어 줌
+// 팔린 꿈·끝난 꿈 링크로 온 사람: 막히지 않게 다른 꿈 보기·내 꿈 팔기로 이어 줌
 function Closed({ text, signedIn }: { text: string; signedIn: boolean }) {
   return (
     <div className="space-y-2">
@@ -232,14 +232,9 @@ function Closed({ text, signedIn }: { text: string; signedIn: boolean }) {
       <Link href="/market" className="block w-full rounded-2xl bg-moon py-4 text-center font-cute text-lg text-night active:scale-[0.98]">
         장터에서 다른 꿈 보기
       </Link>
-      <div className="grid grid-cols-2 gap-2">
-        <Link href="/requests/new" className="flex min-h-12 items-center justify-center rounded-xl bg-white/10 font-cute active:scale-[0.98]">
-          필요한 꿈 구하기
-        </Link>
-        <Link href={signedIn ? "/dreams/new" : "/onboarding"} className="flex min-h-12 items-center justify-center rounded-xl bg-white/10 font-cute active:scale-[0.98]">
-          내 꿈 올리기
-        </Link>
-      </div>
+      <Link href={signedIn ? "/dreams/new" : "/"} className="flex min-h-12 items-center justify-center rounded-xl bg-white/10 font-cute active:scale-[0.98]">
+        내 꿈 팔기
+      </Link>
     </div>
   );
 }

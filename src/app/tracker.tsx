@@ -9,8 +9,6 @@ const PAGES: [RegExp, string][] = [
   [/^\/$/, "home"],
   [/^\/market/, "market"],
   [/^\/sale\//, "sale"],
-  [/^\/requests\/new/, "request_new"],
-  [/^\/requests\//, "request"],
   [/^\/example/, "example"],
   [/^\/g\//, "gift"],
   [/^\/beads/, "beads"],
@@ -23,7 +21,7 @@ export default function Tracker() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const via = url.searchParams.get("via");
-    const id = /^\/(?:sale|requests)\/([0-9a-f-]{36})$/i.exec(url.pathname)?.[1];
+    const id = /^\/(?:sale)\/([0-9a-f-]{36})$/i.exec(url.pathname)?.[1];
     const page = PAGES.find(([re]) => re.test(url.pathname))?.[1] ?? "other";
     track("visit", { target: page, id, via: via === "share" || via === "copy" ? via : undefined });
     if (via) {

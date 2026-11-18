@@ -1,7 +1,6 @@
 import Link from "next/link";
 import TimeAgo, { FreshBadge } from "@/app/time-ago";
 import type { Buzz } from "./market-ticker";
-import type { OpenRequest } from "./request-strip";
 import { gradeByCode } from "@/lib/grades";
 import type { MarketWish } from "@/lib/market-wishes";
 import { normalizeMarketQuery, type MarketSort } from "@/lib/market-search";
@@ -34,8 +33,8 @@ export type RecentSale = {
 
 const priceText = (type: string, price: number) => (type === "beads" ? `구슬 ${price.toLocaleString()}개` : "응원 한마디");
 
-// 내놓은 꿈 + 팔린 꿈 + 꿈 구해요를 최근 순으로 섞어 "방금 소식" 띠에 넣음 (등급 이름이 모두 '몽'으로 끝나 을/이로 고정)
-export function buildBuzz(listings: Listing[], recent: RecentSale[], requests: OpenRequest[] = []): Buzz[] {
+// 내놓은 꿈 + 팔린 꿈을 최근 순으로 섞어 "방금 소식" 띠에 넣음 (등급 이름이 모두 '몽'으로 끝나 을/이로 고정)
+export function buildBuzz(listings: Listing[], recent: RecentSale[]): Buzz[] {
   const items: Buzz[] = [
     ...listings.map((d) => ({
       key: `l-${d.dream_id}`,
@@ -48,12 +47,6 @@ export function buildBuzz(listings: Listing[], recent: RecentSale[], requests: O
       at: r.sold_at,
       href: `/sale/${r.dream_id}`,
       text: `${r.seller_nickname}님의 ${gradeByCode(r.grade)?.name ?? "꿈"}이 ${priceText(r.price_type, r.price)}에 팔렸어요`,
-    })),
-    ...requests.map((q) => ({
-      key: `q-${q.request_id}`,
-      at: q.created_at,
-      href: `/requests/${q.request_id}`,
-      text: `${q.requester_nickname}님이 #${q.luck_tag} 꿈을 구해요`,
     })),
   ];
   return items

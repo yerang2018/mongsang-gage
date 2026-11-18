@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Brand from "@/app/brand";
 import TabBar from "@/app/tab-bar";
-import { MARKET_WISHES, marketWishHref, resolveMarketWish, wishRequestHref } from "@/lib/market-wishes";
+import { MARKET_WISHES, marketWishHref, resolveMarketWish } from "@/lib/market-wishes";
 import { buildBuzz, ListingRow, RecentSales, type Listing, type RecentSale } from "./listing-card";
 import MarketTicker from "./market-ticker";
-import RequestStrip, { type OpenRequest } from "./request-strip";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import MarketSearchForm from "./search-form";
@@ -24,8 +23,9 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   const sp = await searchParams;
   const wish = resolveMarketWish(sp);
   const tag = wish?.tag ?? null;
-  const sort = resolveMarketSort(sp.sort);
   const search = analyzeMarketQuery(sp.q);
+  // 꿈을 검색했을 땐 등급 높은 순이 기본 (직접 최신순을 누르면 최신순)
+  const sort = sp.sort ? resolveMarketSort(sp.sort) : search.query ? "grade" : resolveMarketSort(undefined);
   const gradeFilter = resolveMarketGrade(sp.grade); // 고른 꿈 등급 (없으면 전체)
   // 주소에 등급 선택을 붙여 줌. 등급을 바꾸거나 정렬·추천 검색어를 눌러도 선택이 유지되게
   const withGrade = (href: string, code: string | null = gradeFilter) => (code ? `${href}${href.includes("?") ? "&" : "?"}grade=${code}` : href);
@@ -33,10 +33,9 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   if (!isSupabaseConfigured) return null;
   const supabase = await createClient();
   const searchTags = tag ? [tag] : search.tags.length ? search.tags : [null];
-  const [listingResults, recentRes, requestsRes, { data: auth }] = await Promise.all([
+  const [listingResults, recentRes, { data: auth }] = await Promise.all([
     Promise.all(searchTags.map((searchTag) => supabase.rpc("market_listings", { p_tag: searchTag, p_sort: sort }))),
     supabase.rpc("market_recent_sales"),
-    supabase.rpc("open_dream_requests"),
     supabase.auth.getUser(),
   ]);
   const listingError = listingResults.some((result) => result.error);
@@ -48,10 +47,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
   const baseHref = withGrade(marketWishHref(wish, sort, search.query));
   const allHref = `${baseHref}${baseHref.includes("?") ? "&" : "?"}all=1`;
   const recent = (recentRes.data ?? []) as RecentSale[];
-  const requests = ((requestsRes.data ?? []) as OpenRequest[]).filter((request) => !search.query || !search.tags.length || search.tags.some((value) => value === request.luck_tag));
   const me = auth.user?.id;
-  const requestWish = wish ?? (search.tags.length === 1 ? resolveMarketWish({ tag: search.tags[0] }) : undefined);
-  const requestHref = wishRequestHref(requestWish);
 
   return (
     <div className="kk-market">
@@ -65,10 +61,10 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
         )}
       </header>
 
-      <div className="kk-market-news"><MarketTicker items={buildBuzz(allListings, recent, requests)} /></div>
+      <div className="kk-market-news"><MarketTicker items={buildBuzz(allListings, recent)} /></div>
       <div className="kk-market-heading mt-5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <h1 className="font-title text-[28px] font-bold leading-snug">꿈 장터</h1>
+          <h1 className="font-title text-[28px] font-bold leading-snug"><Link href="/market" aria-label="꿈 장터 첫 화면으로">꿈 장터</Link></h1>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-moon/65">
             <path d="M18.4 14.4A7.6 7.6 0 0 1 9.6 5.6 7.7 7.7 0 1 0 18.4 14.4Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
             <path d="M18 3.5v4M16 5.5h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
@@ -152,8 +148,8 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
               전체 등급 보기
             </Link>
           ) : (
-            <Link href={wish || search.query ? requestHref : me ? "/dreams/new" : "/"} className="mt-4 inline-flex min-h-11 items-center rounded-full bg-moon px-5 font-cute text-night">
-              {wish || search.query ? "이 마음으로 꿈 구하기" : "첫 꿈 올리러 가기"}
+            <Link href={me ? "/dreams/new" : "/"} className="mt-4 inline-flex min-h-11 items-center rounded-full bg-moon px-5 font-cute text-night">
+              내 꿈 팔기
             </Link>
           )}
           {wish && <Link href={marketWishHref(undefined, sort)} className="mt-2 flex min-h-11 items-center justify-center text-sm text-moon underline underline-offset-4">다른 꿈도 둘러보기</Link>}
@@ -171,9 +167,6 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
       {!listingError && sp.all !== "1" && listings.length > 10 && (
         <Link href={allHref} className="mt-4 flex min-h-12 items-center justify-center rounded-xl border border-moon/20 text-sm font-medium text-moon">전체보기 ({listings.length}개)</Link>
       )}
-      <div className="kk-market-requests">
-        <RequestStrip requests={requests} me={me} requestHref={requestHref} />
-      </div>
       {!search.query && <div className="kk-market-recent">
         <RecentSales recent={recent} />
       </div>}
@@ -186,7 +179,7 @@ export default async function MarketPage({ searchParams }: { searchParams: Promi
           href={me ? "/dreams/new" : "/"}
           className="kk-market-compose pointer-events-auto inline-flex min-h-12 items-center rounded-full bg-moon px-5 font-cute text-base text-night active:scale-[0.97]"
         >
-          + 꿈 올리기
+          + 내 꿈 팔기
         </Link>
       </div>
       <TabBar />

@@ -92,10 +92,8 @@ export function marketWishHref(wish?: MarketWish, sort: MarketSort = DEFAULT_MAR
   if (wish) query.set("wish", wish.id);
   const q = normalizeMarketQuery(search);
   if (q) query.set("q", q);
-  if (sort !== DEFAULT_MARKET_SORT) query.set("sort", sort);
+  // 검색어가 있으면 기본이 등급순이라, 최신순을 고른 경우도 주소에 남겨야 함
+  if (sort !== DEFAULT_MARKET_SORT || q) query.set("sort", sort);
   return query.size ? `/market?${query}` : "/market";
 }
 
-export function wishRequestHref(wish?: MarketWish): string {
-  return wish ? `/requests/new?wish=${wish.id}` : "/requests/new";
-}

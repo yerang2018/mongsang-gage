@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { buildBuzz, ListingRow, type Listing, type RecentSale } from "./listing-card";
 import MarketTicker from "./market-ticker";
-import type { OpenRequest } from "./request-strip";
 import { DEFAULT_MARKET_SORT, sortMarketListings } from "@/lib/market-search";
 
 // 홈 화면의 "지금 장터": 방금 소식 띠 + 새로 나온 꿈 3줄, 제목 옆 [전체 N개 ›]
@@ -10,14 +9,12 @@ import { DEFAULT_MARKET_SORT, sortMarketListings } from "@/lib/market-search";
 // compact: 첫 화면용 (2줄)
 export default async function MarketPreview({ me, compact }: { me?: string; compact?: boolean }) {
   const supabase = await createClient();
-  const [listingsRes, recentRes, requestsRes] = await Promise.all([
+  const [listingsRes, recentRes] = await Promise.all([
     supabase.rpc("market_listings", { p_tag: null, p_sort: DEFAULT_MARKET_SORT }),
     supabase.rpc("market_recent_sales"),
-    supabase.rpc("open_dream_requests"),
   ]);
   const listings = sortMarketListings((listingsRes.data ?? []) as Listing[], DEFAULT_MARKET_SORT);
   const sales = (recentRes.data ?? []) as RecentSale[];
-  const requests = (requestsRes.data ?? []) as OpenRequest[];
 
   return (
     <section className="mt-8 text-left">
@@ -29,16 +26,16 @@ export default async function MarketPreview({ me, compact }: { me?: string; comp
           </Link>
         )}
       </div>
-      <MarketTicker items={buildBuzz(listings, sales, requests)} />
+      <MarketTicker items={buildBuzz(listings, sales)} />
 
       {listings.length === 0 ? (
         <div className="mt-2 rounded-2xl bg-white/5 p-5 text-center text-sm text-white/60">
           <p>아직 장터에 나온 꿈이 없어요. 첫 꿈을 걸어 보세요!</p>
           <Link
-            href={me ? "/dreams/new" : "/onboarding"}
+            href={me ? "/dreams/new" : "/"}
             className="mt-3 inline-flex min-h-11 items-center rounded-full bg-moon px-5 font-cute text-night active:scale-[0.98]"
           >
-            첫 꿈 올리러 가기
+            내 꿈 팔기
           </Link>
         </div>
       ) : (
