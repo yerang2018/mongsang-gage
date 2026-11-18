@@ -10,7 +10,9 @@ export const GEMINI_MODELS = (process.env.GEMINI_MODELS || "gemini-3.5-flash,gem
   .map((m) => m.trim())
   .filter(Boolean);
 
-const PER_TRY_TIMEOUT_MS = 45_000; // 해몽이 길어져서 넉넉히
+const PER_TRY_TIMEOUT_MS = 30_000; // 한 번 시도 제한 (오래 멈춘 모델은 빨리 포기)
+const TOTAL_BUDGET_MS = 100_000; // 전체 제한 (서버 120초 안에 끝내기)
+const ROUNDS = 2; // 모델 목록을 두 바퀴까지 (일시적인 혼잡은 금방 풀려서)
 
 // "생각"을 짧게: 기본값이면 3.x Flash가 쓰기 전에 40초 넘게 생각만 함 (2026-10-29 측정: 첫 글자 48초 → 5초, 끝까지 50초 → 9초).
 // 이 설정을 모르는 모델은 400을 내므로, 그때는 같은 모델로 설정 없이 한 번 더
@@ -165,7 +167,10 @@ export async function interpretDream(
   const requestId = newAiRequest();
   let last: unknown;
   let started = false;
-  for (const [i, model] of GEMINI_MODELS.entries()) {
+  const begin = Date.now();
+  const order = Array.from({ length: ROUNDS }, () => GEMINI_MODELS).flat();
+  for (const [i, model] of order.entries()) {
+    if (Date.now() - begin > TOTAL_BUDGET_MS - 8_000) break;
     if (started && onProgress) onProgress({ type: "retry" });
     const watch = onProgress ? progressWatcher(onProgress) : undefined;
     const attempt: AiAttempt = { requestId, attempt: i + 1, model, startedAt: Date.now(), thinkingFallback: false };
