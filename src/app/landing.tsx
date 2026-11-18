@@ -66,6 +66,7 @@ function LandingBody({ mode, guest }: { mode: "login" | "nickname"; guest: boole
       return;
     }
     router.refresh();
+    setSaving(false); // 같은 화면에서 닉네임 입력으로 바뀌므로, 버튼이 "준비하는 중"에 멈추지 않게 풀어 줌
   }
 
   async function save(e: React.FormEvent) {
@@ -86,6 +87,7 @@ function LandingBody({ mode, guest }: { mode: "login" | "nickname"; guest: boole
       return;
     }
     if (existing?.nickname) {
+      setSaving(false);
       router.replace(next ?? "/");
       router.refresh();
       return;
@@ -144,8 +146,7 @@ function LandingBody({ mode, guest }: { mode: "login" | "nickname"; guest: boole
         ) : (
           <div className="mt-10">
             <h2 className="font-title text-2xl leading-relaxed">어떻게 불러드릴까요?</h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/65">추천 이름을 골라 두었어요. 그대로 써도 되고, 직접 고쳐도 돼요.</p>
-            <form onSubmit={save} className="mt-8">
+            <form onSubmit={save} className="mt-6">
               <label htmlFor="nickname" className="sr-only">닉네임</label>
               <input
                 id="nickname"
@@ -155,12 +156,7 @@ function LandingBody({ mode, guest }: { mode: "login" | "nickname"; guest: boole
                 placeholder="닉네임을 입력해 주세요"
                 className="min-h-14 w-full rounded-xl border border-white/15 bg-transparent px-4 text-base ring-moon/60 placeholder:text-white/35 focus:outline-none focus:ring-2"
               />
-              <div className="mt-2 flex items-center justify-between text-xs text-white/60">
-                <button type="button" onClick={() => setNickname(suggestNickname())} className="inline-flex min-h-11 items-center text-moon underline underline-offset-4">
-                  다른 이름 추천받기
-                </button>
-                <span>{length}/12 (2자 이상)</span>
-              </div>
+              <p className="mt-2 text-right text-xs text-white/60">{length}/12 (2자 이상)</p>
               <button
                 disabled={saving || length < 2}
                 className="mt-5 min-h-14 w-full rounded-xl bg-moon px-5 py-4 font-cute text-base text-night active:opacity-80 disabled:opacity-40"
