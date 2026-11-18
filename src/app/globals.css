@@ -258,3 +258,21 @@ a[class*="rounded-"][class*="py-"]:active {
   transform: scale(0.96);
   filter: brightness(0.88);
 }
+
+/* MY·장터: 아래 탭, 떠 있는 버튼, 목록 줄·카드도 눌림 효과 */
+.kk-tabbar a,
+.kk-fab,
+main a[href^="/sale/"],
+main a[href^="/dreams/"],
+main a[href^="/trades/"] {
+  transition: transform 120ms ease, filter 120ms ease, background-color 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.kk-tabbar a:active,
+.kk-fab:active,
+main a[href^="/sale/"]:active,
+main a[href^="/dreams/"]:active,
+main a[href^="/trades/"]:active {
+  transform: scale(0.96);
+  filter: brightness(0.88);
+}
