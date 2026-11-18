@@ -63,12 +63,21 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const nick = new Map(((profiles ?? []) as { id: string; nickname: string | null }[]).map((p) => [p.id, p.nickname ?? "(닉네임 없음)"]));
 
   const all = (counts ?? []) as { status: string; amount_won: number }[];
+  const pendingCount = all.filter((o) => o.status === "pending").length;
+  const paid = all.filter((o) => o.status === "paid");
+  const paidWon = paid.reduce((s, o) => s + o.amount_won, 0);
 
   return (
     <div>
       <div className="flex items-center justify-between gap-2">
         <h1 className="font-title text-2xl font-bold">관리자</h1>
         <span className="truncate text-xs text-white/60">{admin.email}</span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+        <Stat label="입금 대기" value={`${pendingCount}건`} />
+        <Stat label="입금 확인" value={`${paid.length}건`} />
+        <Stat label="충전 금액" value={`${paidWon.toLocaleString()}원`} />
       </div>
 
       <details className="mt-4 rounded-2xl bg-white/5 p-4">
