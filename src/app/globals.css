@@ -162,13 +162,13 @@ main:has(.kk-buybar) { padding-bottom: calc(7rem + env(safe-area-inset-bottom));
   }
 }
 
-/* 하단 작성 영역은 불투명한 흰 바탕으로, 목록의 버튼과 겹쳐 보이지 않게 해요. */
+/* 내 꿈 팔기 버튼만 떠 있게: 바탕·선 없이 버튼 하나만 */
 .kk-market .kk-fab.kk-market-actions {
-  bottom: calc(4rem + env(safe-area-inset-bottom));
-  padding-top: 8px;
-  padding-bottom: 8px;
-  border-top: 1px solid #f0edf6;
-  background: var(--background);
+  bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  padding-top: 0;
+  padding-bottom: 0;
+  border: 0;
+  background: transparent;
 }
 
 /* 운의 이름 대신, 지금 꿈을 고르는 마음을 한눈에 보여 줘요. */
@@ -261,7 +261,7 @@ a[class*="rounded-"][class*="py-"]:active {
 
 /* MY·장터: 아래 탭, 떠 있는 버튼, 목록 줄·카드도 눌림 효과 */
 .kk-tabbar a,
-.kk-fab,
+.kk-fab a,
 main a[href^="/sale/"],
 main a[href^="/dreams/"],
 main a[href^="/trades/"] {
@@ -269,7 +269,7 @@ main a[href^="/trades/"] {
   -webkit-tap-highlight-color: transparent;
 }
 .kk-tabbar a:active,
-.kk-fab:active,
+.kk-fab a:active,
 main a[href^="/sale/"]:active,
 main a[href^="/dreams/"]:active,
 main a[href^="/trades/"]:active {
