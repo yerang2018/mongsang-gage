@@ -113,6 +113,13 @@ export default async function BeadsPage({ searchParams }: { searchParams: Promis
           </ul>
         </section>
       )}
+
+      <p className="mt-8 border-t border-white/10 pt-4 text-center text-xs text-white/60">
+        문의·환불 운영자 이메일{" "}
+        <a href="mailto:woonyoungja@gmail.com" className="underline">
+          woonyoungja@gmail.com
+        </a>
+      </p>
     </div>
   );
 }
