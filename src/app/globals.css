@@ -242,3 +242,19 @@ main:has(.kk-onboarding) > p { display: none; }
 .kk-market-wish:last-child:nth-child(3n + 1) { grid-column: 1 / -1; min-height: 48px; }
 .kk-market-wish-story { background: #f7f4f9; }
 .kk-market-list > li > a { padding-top: 18px; padding-bottom: 18px; }
+
+/* 모든 버튼·버튼처럼 생긴 링크: 누르면 살짝 작아지고 어두워지는 효과 */
+button:not(:disabled),
+[role="button"],
+a[class*="rounded-"][class*="min-h-"],
+a[class*="rounded-"][class*="py-"] {
+  transition: transform 120ms ease, filter 120ms ease, opacity 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled):active,
+[role="button"]:active,
+a[class*="rounded-"][class*="min-h-"]:active,
+a[class*="rounded-"][class*="py-"]:active {
+  transform: scale(0.96);
+  filter: brightness(0.88);
+}
