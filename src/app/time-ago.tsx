@@ -24,10 +24,3 @@ export default function TimeAgo({ at, className, freshClassName }: { at: string;
   const ago = now - new Date(at).getTime();
   return <span className={ago < FRESH_MS && freshClassName ? freshClassName : className}>{formatAgo(ago)}</span>;
 }
-
-// 1시간 안에 나온 꿈에만 붙는 작은 딱지
-export function FreshBadge({ at }: { at: string }) {
-  const now = useNow();
-  if (now === null || now - new Date(at).getTime() >= FRESH_MS) return null;
-  return <span className="kk-pop inline-block shrink-0 rounded bg-[#ff5a4f] px-1.5 py-0.5 align-middle text-xs font-bold text-night">갓 나옴</span>;
-}

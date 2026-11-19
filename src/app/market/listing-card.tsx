@@ -1,5 +1,5 @@
 import Link from "next/link";
-import TimeAgo, { FreshBadge } from "@/app/time-ago";
+import TimeAgo from "@/app/time-ago";
 import type { Buzz } from "./market-ticker";
 import { gradeByCode } from "@/lib/grades";
 import type { MarketWish } from "@/lib/market-wishes";
@@ -140,7 +140,6 @@ export function ListingRow({ d, mine, wish, query, sort }: { d: Listing; mine: b
         <p className="flex items-center gap-1.5">
           <span className="truncate text-base font-bold">{d.title}</span>
           <GradeBadge code={d.grade} />
-          {d.listed_at && <FreshBadge at={d.listed_at} />}
         </p>
         <p className="mt-1 truncate text-sm">
           {d.luck_score != null && (
@@ -173,7 +172,6 @@ export function ProductCard({ d, mine }: { d: Listing; mine: boolean }) {
         <span className="mt-1.5 text-xs opacity-85">{d.grade}등급</span>
         <span className="absolute left-2 top-2 flex gap-1">
           {mine && <span className="rounded-full bg-night/70 px-2 py-0.5 text-xs text-white">내 꿈</span>}
-          {d.listed_at && <FreshBadge at={d.listed_at} />}
         </span>
         {d.luck_tags[0] && <span className="absolute bottom-2 left-2 rounded-full bg-night/50 px-2 py-0.5 text-xs text-white">#{d.luck_tags[0]}</span>}
       </div>
